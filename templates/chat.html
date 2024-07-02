@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRIS Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #chat-container {
+            height: 400px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        #user-input {
+            width: 80%;
+            padding: 5px;
+        }
+        #send-button, #toggle-tom-button {
+            padding: 5px 10px;
+        }
+        #tom-visualization {
+            display: none;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .spinner {
+            display: none;
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0,0,0,.3);
+            border-radius: 50%;
+            border-top-color: #000;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat with IRIS</h1>
+    <div id="chat-container"></div>
+    <input type="text" id="user-input" placeholder="Type your message...">
+    <button id="send-button">Send</button>
+    <button id="toggle-tom-button">Toggle Theory of Mind</button>
+    <div class="spinner" id="spinner"></div>
+    <div id="tom-visualization"></div>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const toggleTomButton = document.getElementById('toggle-tom-button');
+        const tomVisualization = document.getElementById('tom-visualization');
+        const spinner = document.getElementById('spinner');
+
+        function addMessage(sender, message) {
+            const messageElement = document.createElement('p');
+            messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
+            chatContainer.appendChild(messageElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function updateTomVisualization() {
+            fetch('/get_tom', {
+                method: 'GET',
+            })
+            .then(response => response.json())
+            .then(data => {
+                tomVisualization.textContent = data.visualization;
+            });
+        }
+
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (message) {
+                addMessage('You', message);
+                spinner.style.display = 'block';
+                fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    spinner.style.display = 'none';
+                    addMessage('IRIS', data.response);
+                    updateTomVisualization();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    spinner.style.display = 'none';
+                });
+                userInput.value = '';
+            }
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        toggleTomButton.addEventListener('click', function() {
+            if (tomVisualization.style.display === 'none') {
+                tomVisualization.style.display = 'block';
+                updateTomVisualization();
+            } else {
+                tomVisualization.style.display = 'none';
+            }
+        });
+
+        // Initial message from IRIS
+        fetch('/initial_message')
+        .then(response => response.json())
+        .then(data => {
+            addMessage('IRIS', data.response);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+
+        // Update ToM visualization periodically
+        setInterval(updateTomVisualization, 30000); // Update every 30 seconds
+    </script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+max_history_tokens: 3000
+max_tom_prompt_tokens: 800
+sliding_window_size: 10
+
+elements:
+  beliefs:
+    prompt: "Analyze the user's messages in the conversation history and identify their beliefs. Focus on statements that indicate the user's worldview, opinions, or convictions. Return a JSON object with keys: content, evidence (list of relevant user statements), confidence (0-1), and questions (to further explore or clarify beliefs)."
+  emotions:
+    prompt: "Review the user's messages and detect their emotional state. Look for explicit statements of feeling and implicit emotional cues. Return a JSON object with keys: content, evidence, confidence, and questions."
+  goals:
+    prompt: "Examine the user's messages for stated or implied goals and aspirations. Consider both short-term and long-term objectives. Return a JSON object with keys: content, evidence, confidence, and questions."
+  knowledge:
+    prompt: "Analyze the user's messages for indications of their knowledge and understanding. Focus on areas where the user demonstrates expertise or expresses a lack of knowledge. Return a JSON object with keys: content, evidence, confidence, and questions."
+  skills:
+    prompt: "Review the user's messages for mentions of their skills and abilities. Consider both explicit statements and implicit demonstrations of capability. Return a JSON object with keys: content, evidence, confidence, and questions."
+  challenges:
+    prompt: "Examine the user's messages for challenges or difficulties they are facing. Look for explicit statements of problems and implicit indications of struggle. Return a JSON object with keys: content, evidence, confidence, and questions."
+
+meta_elements:
+  blindspots:
+    prompt: "Based on the current Theory of Mind and conversation history, identify potential blindspots or areas the user might be overlooking. Consider contradictions, unexplored areas, and potential biases. Return a JSON array of blindspots, each with a description and relevance score (0-1)."
+  next_steps:
+    prompt: "Considering the current Theory of Mind, conversation history, and identified blindspots, suggest potential next steps or actions for the user. Focus on actions that could lead to growth, address challenges, or explore new areas. Return a JSON array of next steps, each with a description and relevance score (0-1)."
+  conversation_summary:
+    prompt: "Summarize the key points of the conversation so far, focusing on the user's main concerns, goals, and any decisions or insights reached. Highlight any significant changes in the user's perspective or emotional state. Return your response as a concise paragraph."
+
+system_prompts:
+  introduction: "You are IRIS, an AI assistant designed to help users explore their thoughts, feelings, and goals. Introduce yourself warmly and ask how you can assist the user today. Mention that they can use /show to see their current Theory of Mind, /blindspots to explore potential blindspots, /next for suggested next steps, and /quit to end the conversation."
+  main_interaction: "You are IRIS, an AI assistant. Base your responses on this Theory of Mind for the user: {tom}. Respond empathetically and insightfully, drawing connections between different aspects of the user's beliefs, emotions, and goals. If the user points out any inaccuracies in their Theory of Mind, acknowledge the feedback and adjust your understanding accordingly."
+
+commands:
+  show: "/show"
+  blindspots: "/blindspots"
+  next: "/next"
+  quit: "/quit"
+
+update_frequency:
+  blindspots: 3
+  next_steps: 2
+  conversation_summary: 5
+
+feedback_prompt: "I'm always learning and trying to improve my understanding. If anything in my responses seems inaccurate or misaligned with your perspective, please let me know. Your feedback helps me adjust and provide better support."
+
+
+visualization:
+  color_scheme:
+    beliefs: "#4287f5"
+    emotions: "#f54242"
+    goals: "#42f554"
+    knowledge: "#f5d442"
+    skills: "#9642f5"
+    challenges: "#f542f2"
+  layout: "force-directed"
+  animation_duration: 500
