@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, render_template
 from theory_of_mind import TheoryOfMind
 from llm_interface import get_llm_response, generate_blindspots, generate_next_steps
-from visualization import generate_tom_visualization
+from visualization import generate_tom_visualization, generate_graphical_visualization
 import yaml
 import traceback
 
@@ -78,6 +78,16 @@ def get_tom():
         print(f"Error in get_tom: {str(e)}")
         print(traceback.format_exc())
         return jsonify({'visualization': "Error generating Theory of Mind visualization."})
+
+@app.route('/get_tom_graph', methods=['GET'])
+def get_tom_graph():
+    try:
+        graph_html = generate_graphical_visualization(tom)
+        return jsonify({'graph': graph_html})
+    except Exception as e:
+        print(f"Error in get_tom_graph: {str(e)}")
+        print(traceback.format_exc())
+        return jsonify({'graph': '<p>Error generating visualization</p>'})
 
 @app.route('/feedback', methods=['POST'])
 def feedback():
