@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IRIS Chat</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -22,7 +23,7 @@
             width: 80%;
             padding: 5px;
         }
-        #send-button, #toggle-tom-button {
+        #send-button, #toggle-tom-button, #toggle-graph-button {
             padding: 5px 10px;
         }
         #tom-visualization {
@@ -32,6 +33,10 @@
             margin-top: 20px;
             white-space: pre-wrap;
             font-family: monospace;
+        }
+        #tom-graph {
+            display: none;
+            margin-top: 20px;
         }
         .spinner {
             display: none;
@@ -53,15 +58,19 @@
     <input type="text" id="user-input" placeholder="Type your message...">
     <button id="send-button">Send</button>
     <button id="toggle-tom-button">Toggle Theory of Mind</button>
+    <button id="toggle-graph-button">Toggle Graph</button>
     <div class="spinner" id="spinner"></div>
     <div id="tom-visualization"></div>
+    <div id="tom-graph"></div>
 
     <script>
         const chatContainer = document.getElementById('chat-container');
         const userInput = document.getElementById('user-input');
         const sendButton = document.getElementById('send-button');
         const toggleTomButton = document.getElementById('toggle-tom-button');
+        const toggleGraphButton = document.getElementById('toggle-graph-button');
         const tomVisualization = document.getElementById('tom-visualization');
+        const tomGraph = document.getElementById('tom-graph');
         const spinner = document.getElementById('spinner');
 
         function addMessage(sender, message) {
@@ -78,6 +87,16 @@
             .then(response => response.json())
             .then(data => {
                 tomVisualization.textContent = data.visualization;
+            });
+        }
+
+        function updateGraphVisualization() {
+            fetch('/get_tom_graph', {
+                method: 'GET',
+            })
+            .then(response => response.json())
+            .then(data => {
+                tomGraph.innerHTML = data.graph;
             });
         }
 
@@ -98,6 +117,7 @@
                     spinner.style.display = 'none';
                     addMessage('IRIS', data.response);
                     updateTomVisualization();
+                    updateGraphVisualization();
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -123,6 +143,15 @@
             }
         });
 
+        toggleGraphButton.addEventListener('click', function() {
+            if (tomGraph.style.display === 'none') {
+                tomGraph.style.display = 'block';
+                updateGraphVisualization();
+            } else {
+                tomGraph.style.display = 'none';
+            }
+        });
+
         // Initial message from IRIS
         fetch('/initial_message')
         .then(response => response.json())
@@ -135,6 +164,7 @@
 
         // Update ToM visualization periodically
         setInterval(updateTomVisualization, 30000); // Update every 30 seconds
+        setInterval(updateGraphVisualization, 30000);
     </script>
 </body>
 </html>
