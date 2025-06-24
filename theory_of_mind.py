@@ -105,5 +105,17 @@ class TheoryOfMind:
         return config['system_prompts']['main_interaction'].format(tom=tom_summary)
 
     def handle_user_feedback(self, feedback: str):
-        # Implement logic to adjust TOM based on user feedback
-        pass
+        """Update the Theory of Mind using explicit user feedback."""
+        # Treat the feedback as an additional user message so the
+        # element update prompts can take it into account.
+        self.message_history.append({"role": "user", "content": feedback})
+
+        user_messages = [msg for msg in self.message_history if msg["role"] == "user"]
+
+        # Update each element of the frame with the new feedback
+        for category, elements in self.frame.items():
+            for element in elements:
+                element.update(category, user_messages)
+
+        # Persist the updated Theory of Mind so future prompts include it
+        self.save_to_file(f"tom_{self.user_id}.json")
