@@ -1,0 +1,55 @@
+{
+  "name": "@aperture/sdk",
+  "version": "0.1.0",
+  "description": "Official TypeScript/JavaScript SDK for Aperture - User Intelligence for AI Apps",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "prepublishOnly": "npm run build",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "keywords": [
+    "ai",
+    "llm",
+    "user-intelligence",
+    "analytics",
+    "conversational-ai",
+    "openai",
+    "anthropic",
+    "theory-of-mind"
+  ],
+  "author": "Aperture Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/aperture"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/aperture/issues"
+  },
+  "homepage": "https://aperture.dev",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.50.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.0.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.2.0"
+  }
+}
