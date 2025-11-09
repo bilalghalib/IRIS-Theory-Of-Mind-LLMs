@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aperture - User Intelligence for AI Apps</title>
+    <meta name="description" content="Automatically build structured user profiles from conversations. The analytics layer for LLM applications.">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5568d3;
+            --secondary: #764ba2;
+            --text: #2d3748;
+            --text-light: #4a5568;
+            --bg: #ffffff;
+            --bg-light: #f7fafc;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 100px 20px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 20px;
+            margin-bottom: 40px;
+            opacity: 0.95;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-block;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 20px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 50px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .feature {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .feature h3 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .feature p {
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+
+        .code-example {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 30px;
+            border-radius: 12px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .code-example .comment {
+            color: #718096;
+        }
+
+        .code-example .string {
+            color: #68d391;
+        }
+
+        .code-example .keyword {
+            color: #63b3ed;
+        }
+
+        .use-cases {
+            background: var(--bg-light);
+        }
+
+        .use-case-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .use-case {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+
+        .use-case:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .use-case h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .comparison {
+            margin-top: 60px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .comparison-table th {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .check {
+            color: #48bb78;
+            font-weight: bold;
+        }
+
+        .cross {
+            color: #f56565;
+            font-weight: bold;
+        }
+
+        .pricing {
+            text-align: center;
+        }
+
+        .pricing-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .pricing-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 40px 30px;
+            transition: all 0.3s;
+        }
+
+        .pricing-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102,126,234,0.2);
+        }
+
+        .pricing-card.featured {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(102,126,234,0.05) 0%, rgba(118,75,162,0.05) 100%);
+        }
+
+        .pricing-card h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .pricing-card .price {
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 20px 0;
+        }
+
+        .pricing-card .price span {
+            font-size: 18px;
+            color: var(--text-light);
+        }
+
+        .pricing-card ul {
+            list-style: none;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .pricing-card li {
+            padding: 8px 0;
+            color: var(--text-light);
+        }
+
+        .pricing-card li:before {
+            content: "✓ ";
+            color: var(--primary);
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        footer {
+            background: #1a202c;
+            color: #a0aec0;
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .hero p {
+                font-size: 18px;
+            }
+
+            .section-title {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>🔍 User Intelligence for AI Applications</h1>
+        <p>
+            Automatically build structured, explainable user profiles from conversations.
+            The missing analytics layer for LLM apps.
+        </p>
+        <div class="cta-buttons">
+            <a href="/docs" class="btn btn-primary">Read the Docs</a>
+            <a href="https://github.com/yourusername/aperture" class="btn btn-secondary">View on GitHub</a>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <div class="container">
+        <h2 class="section-title">The Problem with Chat Logs</h2>
+        <p style="text-align: center; font-size: 18px; color: var(--text-light); max-width: 800px; margin: 0 auto;">
+            Every AI app generates thousands of conversations. But the insights are trapped in unstructured text.
+            You can't query, analyze, or personalize based on what you learn.
+        </p>
+
+        <div class="comparison" style="margin-top: 50px;">
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>What Teams Do Now</th>
+                        <th>With Aperture</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Chat logs are write-only</td>
+                        <td class="check">✓ Structured, queryable profiles</td>
+                    </tr>
+                    <tr>
+                        <td>Manual user profiling via forms</td>
+                        <td class="check">✓ Auto-extracted from conversations</td>
+                    </tr>
+                    <tr>
+                        <td>Context windows as "memory"</td>
+                        <td class="check">✓ Persistent, confidence-scored insights</td>
+                    </tr>
+                    <tr>
+                        <td>Black-box AI responses</td>
+                        <td class="check">✓ Explainable with evidence trails</td>
+                    </tr>
+                    <tr>
+                        <td>Generic responses for all users</td>
+                        <td class="check">✓ Personalized based on understanding</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- How It Works -->
+    <div class="container">
+        <h2 class="section-title">How It Works</h2>
+
+        <div class="code-example">
+<span class="comment"># Send a message through Aperture</span>
+<span class="keyword">response</span> = requests.post(
+    <span class="string">"https://api.aperture.dev/v1/conversations/conv_123/messages"</span>,
+    headers={<span class="string">"X-Aperture-API-Key"</span>: <span class="string">"your-key"</span>},
+    json={
+        <span class="string">"user_id"</span>: <span class="string">"user_456"</span>,
+        <span class="string">"message"</span>: <span class="string">"I'm trying to deploy on AWS but keep getting errors"</span>,
+        <span class="string">"llm_provider"</span>: <span class="string">"openai"</span>,
+        <span class="string">"llm_api_key"</span>: <span class="string">"sk-your-openai-key"</span>
+    }
+)
+
+<span class="comment"># Aperture automatically extracts:</span>
+<span class="comment"># ✓ technical_confidence: 0.4 (struggling)</span>
+<span class="comment"># ✓ emotional_state: "frustrated"</span>
+<span class="comment"># ✓ help_seeking_behavior: "troubleshooting"</span>
+<span class="comment"># ✓ Evidence: "keep getting errors"</span>
+
+<span class="comment"># Query assessments later</span>
+assessments = requests.get(
+    <span class="string">"https://api.aperture.dev/v1/users/user_456/assessments"</span>
+).json()
+        </div>
+    </div>
+
+    <!-- Features -->
+    <div class="container">
+        <h2 class="section-title">Key Features</h2>
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">🔌</div>
+                <h3>Works With Any LLM</h3>
+                <p>Proxy for OpenAI, Anthropic, and more. Customers bring their own API keys for full privacy and cost control.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">🧠</div>
+                <h3>Auto-Extract Insights</h3>
+                <p>Automatically detects technical confidence, emotional state, help-seeking behavior, and custom attributes from conversations.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">📊</div>
+                <h3>Confidence Scores</h3>
+                <p>Every assessment includes a confidence score (0.0 - 1.0) so you know how certain the insight is.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">📝</div>
+                <h3>Evidence Trails</h3>
+                <p>Each insight is backed by actual user quotes. Full transparency into why an assessment was made.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">✏️</div>
+                <h3>User Corrections</h3>
+                <p>Users can correct misunderstandings through a beautiful UI. The system re-learns and improves over time.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">🔍</div>
+                <h3>Pattern Discovery</h3>
+                <p>Automatically discover common patterns across all users and suggest new constructs to track.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Use Cases -->
+    <section class="use-cases">
+        <div class="container">
+            <h2 class="section-title">Use Cases</h2>
+            <div class="use-case-grid">
+                <div class="use-case">
+                    <h4>💻 Developer Tools</h4>
+                    <p>Track skill levels and preferences to generate better code suggestions than generic AI.</p>
+                </div>
+
+                <div class="use-case">
+                    <h4>🎧 Customer Support</h4>
+                    <p>Auto-profile customer expertise to route to the right tier and provide contextual help.</p>
+                </div>
+
+                <div class="use-case">
+                    <h4>📚 EdTech</h4>
+                    <p>Build real-time knowledge profiles. See exactly what each student understands.</p>
+                </div>
+
+                <div class="use-case">
+                    <h4>💼 Sales Tools</h4>
+                    <p>Extract buyer intent, timeline, authority, and objections from discovery calls automatically.</p>
+                </div>
+
+                <div class="use-case">
+                    <h4>🧘 Coaching</h4>
+                    <p>Track emotional patterns and goal progress with audit trails and user-verified insights.</p>
+                </div>
+
+                <div class="use-case">
+                    <h4>🏢 Enterprise SaaS</h4>
+                    <p>Understand user needs at scale to improve product decisions and personalization.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <div class="container pricing">
+        <h2 class="section-title">Simple, Transparent Pricing</h2>
+        <div class="pricing-cards">
+            <div class="pricing-card">
+                <h3>Free</h3>
+                <div class="price">$0<span>/month</span></div>
+                <ul>
+                    <li>1,000 assessments/month</li>
+                    <li>Basic constructs</li>
+                    <li>API access</li>
+                    <li>Community support</li>
+                </ul>
+                <a href="/docs" class="btn btn-primary" style="width: 100%;">Get Started</a>
+            </div>
+
+            <div class="pricing-card featured">
+                <h3>Pro</h3>
+                <div class="price">$49<span>/month</span></div>
+                <ul>
+                    <li>10,000 assessments/month</li>
+                    <li>Custom constructs</li>
+                    <li>Pattern discovery</li>
+                    <li>Priority support</li>
+                    <li>Webhooks & triggers</li>
+                </ul>
+                <a href="mailto:sales@aperture.dev" class="btn btn-primary" style="width: 100%;">Start Free Trial</a>
+            </div>
+
+            <div class="pricing-card">
+                <h3>Enterprise</h3>
+                <div class="price">Custom</div>
+                <ul>
+                    <li>Unlimited assessments</li>
+                    <li>Multi-model consensus</li>
+                    <li>On-premise deployment</li>
+                    <li>SLA & dedicated support</li>
+                    <li>Custom integrations</li>
+                </ul>
+                <a href="mailto:sales@aperture.dev" class="btn btn-primary" style="width: 100%;">Contact Sales</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="container" style="text-align: center; padding: 100px 20px;">
+        <h2 style="font-size: 36px; margin-bottom: 20px;">Ready to understand your users?</h2>
+        <p style="font-size: 18px; color: var(--text-light); margin-bottom: 40px;">
+            Start building structured user intelligence from conversations in 5 minutes.
+        </p>
+        <div class="cta-buttons">
+            <a href="/docs" class="btn btn-primary">Read the Docs</a>
+            <a href="https://github.com/yourusername/aperture" class="btn" style="background: var(--bg-light); color: var(--primary);">View GitHub</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Aperture. Built with ❤️ for transparent AI.</p>
+        <p style="margin-top: 10px;">
+            <a href="/docs">Documentation</a> •
+            <a href="https://github.com/yourusername/aperture">GitHub</a> •
+            <a href="mailto:hello@aperture.dev">Contact</a>
+        </p>
+    </footer>
+</body>
+</html>

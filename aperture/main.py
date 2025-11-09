@@ -391,9 +391,16 @@ async def health_check():
     return {"status": "healthy", "version": "0.1.0"}
 
 
-@app.get("/")
-async def root():
-    """Root endpoint with API info."""
+@app.get("/", response_class=HTMLResponse)
+async def landing_page():
+    """Serve the landing page."""
+    with open("web/landing.html") as f:
+        return f.read()
+
+
+@app.get("/api")
+async def api_info():
+    """API info endpoint."""
     return {
         "name": "Aperture API",
         "tagline": "User Intelligence Middleware for AI Applications",
