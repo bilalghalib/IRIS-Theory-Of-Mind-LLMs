@@ -4,6 +4,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from typing import Optional, List
 import asyncio
+from datetime import datetime
 
 from config import settings
 from schemas import (
@@ -22,6 +23,8 @@ from db.supabase_client import db
 from services.llm_proxy import llm_proxy
 from services.assessment_extractor import assessment_extractor
 from services.short_link import generate_short_id, create_aperture_link, create_embedded_footer
+from services.pattern_discovery import pattern_discovery
+from services.construct_creator import construct_creator
 
 app = FastAPI(
     title="Aperture API",
@@ -381,6 +384,115 @@ async def edit_understanding(short_id: str, request: Request):
             "assessments": assessments_data
         }
     )
+
+
+# ==================== ADMIN / DISCOVERY ENDPOINTS ====================
+
+@app.post("/v1/admin/discover-patterns")
+async def discover_patterns_endpoint(
+    min_users: int = 10,
+    min_occurrence_rate: float = 0.2,
+    lookback_days: int = 7,
+    api_key: str = Header(..., alias="X-Aperture-API-Key")
+):
+    """
+    Discover common patterns across all conversations.
+
+    This endpoint analyzes recent conversations to find common user patterns
+    and suggests new constructs to track.
+    """
+    await verify_api_key(api_key)
+
+    try:
+        discovered = await pattern_discovery.discover_patterns(
+            min_users=min_users,
+            min_occurrence_rate=min_occurrence_rate,
+            lookback_days=lookback_days
+        )
+
+        return {
+            "discovered_at": datetime.utcnow().isoformat(),
+            "parameters": {
+                "min_users": min_users,
+                "min_occurrence_rate": min_occurrence_rate,
+                "lookback_days": lookback_days
+            },
+            "patterns_found": len(discovered),
+            "patterns": discovered
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error discovering patterns: {str(e)}")
+
+
+@app.post("/v1/constructs/from-description")
+async def create_construct_from_description(
+    request: dict,
+    api_key: str = Header(..., alias="X-Aperture-API-Key")
+):
+    """
+    Create a construct from a natural language description.
+
+    Example:
+    {
+      "description": "I want to track if users are ready to upgrade to paid tier"
+    }
+    """
+    await verify_api_key(api_key)
+
+    description = request.get("description")
+    if not description:
+        raise HTTPException(status_code=400, detail="Missing 'description' field")
+
+    try:
+        result = await construct_creator.create_from_description(
+            description=description,
+            user_id="operator"  # In production, get from auth
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating construct: {str(e)}")
+
+
+@app.get("/v1/constructs/templates")
+async def get_construct_templates(
+    search: Optional[str] = None,
+    use_case: Optional[str] = None,
+    api_key: str = Header(..., alias="X-Aperture-API-Key")
+):
+    """
+    Get available construct templates from the marketplace.
+
+    Query Parameters:
+    - search: Search query for templates
+    - use_case: Filter by use case (e.g., "customer support", "sales")
+    """
+    await verify_api_key(api_key)
+
+    try:
+        templates = await construct_creator.get_templates(
+            search_query=search,
+            use_case=use_case
+        )
+        return {"templates": templates, "count": len(templates)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching templates: {str(e)}")
+
+
+@app.post("/v1/constructs/validate")
+async def validate_construct(
+    config: dict,
+    api_key: str = Header(..., alias="X-Aperture-API-Key")
+):
+    """
+    Validate a construct configuration before creating it.
+    """
+    await verify_api_key(api_key)
+
+    try:
+        validation_result = await construct_creator.validate_construct_config(config)
+        return validation_result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error validating construct: {str(e)}")
 
 
 # ==================== HEALTH CHECK ====================
