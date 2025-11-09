@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why This Response? - Aperture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .message-box {
+            background: #f5f5f5;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .message-box h3 {
+            font-size: 14px;
+            text-transform: uppercase;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .message-box p {
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .assessment {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: box-shadow 0.2s;
+        }
+
+        .assessment:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .assessment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .assessment-element {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .confidence-badge {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s;
+        }
+
+        .assessment-value {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .assessment-reasoning {
+            color: #555;
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+
+        .evidence-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .evidence-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        .evidence-item {
+            background: #fafafa;
+            padding: 10px;
+            border-left: 3px solid #667eea;
+            margin: 8px 0;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .actions {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #f5f5f5;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💡 Why This Response?</h1>
+        <p class="subtitle">Here's what Aperture understood about you to generate this response</p>
+
+        {% if message %}
+        <div class="message-box">
+            <h3>The Response</h3>
+            <p>{{ message.content }}</p>
+        </div>
+        {% endif %}
+
+        {% if assessments %}
+            {% for assessment in assessments %}
+            <div class="assessment">
+                <div class="assessment-header">
+                    <span class="assessment-element">{{ assessment.element.replace('_', ' ').title() }}</span>
+                    <span class="confidence-badge">{{ (assessment.confidence * 100)|int }}% confident</span>
+                </div>
+
+                <div class="confidence-bar">
+                    <div class="confidence-fill" style="width: {{ (assessment.confidence * 100)|int }}%"></div>
+                </div>
+
+                <div class="assessment-value">
+                    <strong>Value:</strong>
+                    {% if assessment.value_type == 'score' %}
+                        {{ (assessment.value_data.score * 100)|int }}/100
+                    {% elif assessment.value_type == 'tag' %}
+                        {{ assessment.value_data.tag }}
+                    {% else %}
+                        {{ assessment.value_data }}
+                    {% endif %}
+                </div>
+
+                <div class="assessment-reasoning">
+                    <strong>Why:</strong> {{ assessment.reasoning }}
+                </div>
+
+                {% if assessment.evidence %}
+                <div class="evidence-section">
+                    <div class="evidence-title">Evidence from your messages:</div>
+                    {% for evidence in assessment.evidence[:3] %}
+                    <div class="evidence-item">
+                        "{{ evidence.user_message }}"
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="empty-state">
+            <p>No assessments were extracted for this response yet.</p>
+            <p style="font-size: 12px; margin-top: 10px;">Assessments are processed asynchronously and may take a few moments.</p>
+        </div>
+        {% endif %}
+
+        <div class="actions">
+            <a href="/c/{{ short_id }}/edit" class="btn btn-primary">✏️ Correct My Understanding</a>
+            <a href="javascript:window.close()" class="btn btn-secondary">Close</a>
+        </div>
+    </div>
+</body>
+</html>
