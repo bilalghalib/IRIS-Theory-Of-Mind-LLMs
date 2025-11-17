@@ -1,0 +1,75 @@
+{
+  "user_id": "f7a2ab28",
+  "frame": {
+    "beliefs": [
+      {
+        "content": "",
+        "evidence": [],
+        "confidence": 0.5,
+        "questions": []
+      }
+    ],
+    "emotions": [
+      {
+        "content": "neutral",
+        "evidence": [
+          "user asked 'you up?'"
+        ],
+        "confidence": 0.6,
+        "questions": []
+      }
+    ],
+    "goals": [
+      {
+        "content": "",
+        "evidence": [
+          "User might be looking to engage in a conversation or seek assistance."
+        ],
+        "confidence": 0.6,
+        "questions": []
+      }
+    ],
+    "knowledge": [
+      {
+        "content": "",
+        "evidence": [],
+        "confidence": 0.5,
+        "questions": [
+          "Is there something specific you would like to discuss or ask about?"
+        ]
+      }
+    ],
+    "skills": [
+      {
+        "content": "",
+        "evidence": [],
+        "confidence": 0.5,
+        "questions": []
+      }
+    ],
+    "challenges": [
+      {
+        "content": "It seems like you might be feeling a bit lonely or in need of someone to talk to. How can I support you?",
+        "evidence": [
+          "User asking if someone is up, which can indicate a desire for companionship or conversation."
+        ],
+        "confidence": 0.7,
+        "questions": []
+      }
+    ]
+  },
+  "blindspots": [],
+  "next_steps": [],
+  "conversation_summary": "",
+  "message_history": [
+    {
+      "role": "user",
+      "content": "you up?"
+    },
+    {
+      "role": "assistant",
+      "content": "I'm here! How can I assist you today?"
+    }
+  ],
+  "interaction_count": 1
+}

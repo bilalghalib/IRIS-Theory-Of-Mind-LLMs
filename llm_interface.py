@@ -4,7 +4,9 @@ import yaml
 import json
 import re
 
-client = OpenAI(api_key="your key here")
+client = OpenAI(api_key="sk-c0c080e84a924df68f3dc58d554b6fe2",
+    base_url="https://withmartian.com/api/openai/v1",
+)
 
 with open('config.yaml', 'r') as f:
     config = yaml.safe_load(f)
@@ -30,7 +32,7 @@ def get_llm_response(conversation: list, system_prompt: str) -> str:
     messages = [{"role": "system", "content": system_prompt}] + truncated_conversation
 
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="router",
         messages=messages,
         max_tokens=150,
         n=1,
@@ -59,7 +61,7 @@ def update_tom_element(category: str, current_state: dict, user_messages: list) 
 
     try:
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="router",
             messages=messages,
             response_format={ "type": "json_object" },
             max_tokens=200,
@@ -90,7 +92,7 @@ def generate_blindspots(tom_dict: dict) -> list:
 
     try:
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="router",
             messages=messages,
             response_format={ "type": "json_object" },
             max_tokens=200,
@@ -121,7 +123,7 @@ def generate_next_steps(tom_dict: dict) -> list:
 
     try:
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="router",
             messages=messages,
             response_format={ "type": "json_object" },
             max_tokens=200,
@@ -152,7 +154,7 @@ def generate_conversation_summary(conversation: list) -> str:
 
     try:
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="router",
             messages=messages,
             max_tokens=200,
             n=1,
