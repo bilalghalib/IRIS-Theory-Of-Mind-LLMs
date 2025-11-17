@@ -43,8 +43,8 @@ jobs:
         run: mypy . --ignore-missing-imports
         continue-on-error: true  # Type checking is strict, don't fail builds yet
 
-  test:
-    name: Run Tests
+  unit-tests:
+    name: Unit Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -69,11 +69,49 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
 
-      - name: Run tests with coverage
+      - name: Run unit tests with coverage
         run: |
-          pytest --cov=. --cov-report=xml --cov-report=term
+          pytest tests/unit/ -v --cov=services --cov-report=xml --cov-report=term
         env:
-          # Use test environment variables
+          APERTURE_API_KEY: test-api-key
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: unit
+          fail_ci_if_error: false
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Run integration tests
+        run: |
+          pytest tests/integration/ -v -m integration --cov=. --cov-report=xml --cov-report=term
+        env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
@@ -84,7 +122,111 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           file: ./coverage.xml
+          flags: integration
           fail_ci_if_error: false
+
+  e2e-tests:
+    name: E2E Tests (Puppeteer)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+
+      - name: Cache Node dependencies
+        uses: actions/cache@v3
+        with:
+          path: tests/e2e/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('tests/e2e/package-lock.json') }}
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Node dependencies
+        working-directory: tests/e2e
+        run: npm ci
+
+      - name: Start Aperture server
+        run: |
+          uvicorn main:app --host 0.0.0.0 --port 8000 &
+          sleep 5  # Wait for server to start
+        env:
+          APERTURE_API_KEY: test-api-key
+          BASE_URL: http://localhost:8000
+
+      - name: Run E2E tests
+        working-directory: tests/e2e
+        run: npm test
+        env:
+          BASE_URL: http://localhost:8000
+
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-screenshots
+          path: tests/e2e/screenshots/
+
+  visual-regression:
+    name: Visual Regression Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          cd tests/e2e && npm ci
+
+      - name: Start Aperture server
+        run: |
+          uvicorn main:app --host 0.0.0.0 --port 8000 &
+          sleep 5
+        env:
+          APERTURE_API_KEY: test-api-key
+
+      - name: Run visual regression tests
+        working-directory: tests/e2e
+        run: npm run test:visual
+        env:
+          BASE_URL: http://localhost:8000
+
+      - name: Upload visual diffs on failure
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: visual-diffs
+          path: tests/e2e/__image_snapshots__/__diff_output__/
 
   security:
     name: Security Scan
