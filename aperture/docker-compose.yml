@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # Aperture API
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - APERTURE_API_KEY=${APERTURE_API_KEY}
+      - SHORT_LINK_DOMAIN=localhost:8000
+    volumes:
+      - .:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    depends_on:
+      - postgres
+    networks:
+      - aperture-network
+
+  # Local Postgres (alternative to Supabase for development)
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: aperture
+      POSTGRES_PASSWORD: aperture_dev
+      POSTGRES_DB: aperture_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    networks:
+      - aperture-network
+
+  # Redis (for future: caching, background jobs)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - aperture-network
+
+volumes:
+  postgres_data:
+
+networks:
+  aperture-network:
+    driver: bridge

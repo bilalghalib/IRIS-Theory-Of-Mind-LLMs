@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aperture Pricing Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5568d3;
+            --secondary: #764ba2;
+            --text: #2d3748;
+            --text-light: #4a5568;
+            --bg: #ffffff;
+            --bg-light: #f7fafc;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-light);
+            padding: 40px 20px;
+        }
+
+        .calculator-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .calculator-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .calculator-header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .calculator-header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .calculator-body {
+            padding: 40px;
+        }
+
+        .input-group {
+            margin-bottom: 30px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+
+        .input-group input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #e2e8f0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .input-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+
+        .input-group input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+
+        .input-value {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .input-value .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .input-value .range-labels {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .results {
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .results-header h2 {
+            font-size: 20px;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .results-header .estimate {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .recommended-plan {
+            background: white;
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .recommended-plan .plan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .recommended-plan h3 {
+            font-size: 24px;
+            color: var(--text);
+        }
+
+        .recommended-plan .price {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .recommended-plan .price span {
+            font-size: 16px;
+            color: var(--text-light);
+        }
+
+        .recommended-plan ul {
+            list-style: none;
+            margin: 20px 0;
+        }
+
+        .recommended-plan li {
+            padding: 8px 0;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+        }
+
+        .recommended-plan li:before {
+            content: "✓";
+            color: #48bb78;
+            font-weight: bold;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .headroom {
+            display: flex;
+            justify-content: space-between;
+            background: #f0fff4;
+            border: 1px solid #48bb78;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 15px;
+        }
+
+        .headroom .label {
+            color: #2f855a;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .headroom .value {
+            color: #2f855a;
+            font-weight: 700;
+        }
+
+        .annual-savings {
+            background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .annual-savings .label {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .annual-savings .amount {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .annual-savings .savings {
+            font-size: 14px;
+            color: #48bb78;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .cta-button {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .cta-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .note {
+            font-size: 13px;
+            color: var(--text-light);
+            text-align: center;
+            margin-top: 20px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .calculator-header h1 {
+                font-size: 24px;
+            }
+
+            .recommended-plan .plan-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .recommended-plan .price {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="calculator-header">
+            <h1>💰 Find Your Perfect Plan</h1>
+            <p>Calculate your estimated monthly costs based on usage</p>
+        </div>
+
+        <div class="calculator-body">
+            <div class="input-group">
+                <label for="conversations">Conversations per month</label>
+                <input
+                    type="range"
+                    id="conversations"
+                    min="100"
+                    max="100000"
+                    value="1000"
+                    step="100"
+                >
+                <div class="input-value">
+                    <span class="value" id="conversations-value">1,000</span>
+                    <span class="range-labels">100 → 100K</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="assessments-per-conv">Average assessments per conversation</label>
+                <input
+                    type="range"
+                    id="assessments-per-conv"
+                    min="1"
+                    max="10"
+                    value="3"
+                    step="1"
+                >
+                <div class="input-value">
+                    <span class="value" id="assessments-value">3</span>
+                    <span class="range-labels">1 → 10</span>
+                </div>
+            </div>
+
+            <div class="results">
+                <div class="results-header">
+                    <h2>Estimated monthly assessments</h2>
+                    <div class="estimate" id="total-assessments">3,000</div>
+                </div>
+
+                <div class="recommended-plan" id="recommended-plan">
+                    <div class="plan-header">
+                        <h3 id="plan-name">Starter</h3>
+                        <div class="price">
+                            <span id="plan-price">$29</span><span>/month</span>
+                        </div>
+                    </div>
+
+                    <div id="plan-features">
+                        <!-- Features will be inserted by JavaScript -->
+                    </div>
+
+                    <div class="headroom" id="headroom">
+                        <span class="label">Headroom</span>
+                        <span class="value" id="headroom-value">2,000 assessments</span>
+                    </div>
+
+                    <div class="annual-savings">
+                        <div class="label">Estimated annual cost</div>
+                        <div class="amount" id="annual-cost">$348</div>
+                        <div class="savings" id="annual-savings">💎 Save $59 with annual billing</div>
+                    </div>
+
+                    <a href="/docs" class="cta-button" id="cta-button">Start Free Trial</a>
+
+                    <div class="note">
+                        💡 <strong>Overage protection:</strong> If you exceed your plan limit, we'll automatically bill overages at $0.01 per assessment. You can set hard caps to prevent surprises.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const plans = {
+            free: {
+                name: 'Free',
+                price: 0,
+                limit: 1000,
+                features: [
+                    '1,000 assessments/month',
+                    '2 users tracked',
+                    'Basic constructs (3 pre-built)',
+                    'Community support',
+                    '7-day data retention'
+                ]
+            },
+            starter: {
+                name: 'Starter',
+                price: 29,
+                limit: 5000,
+                features: [
+                    '5,000 assessments/month',
+                    '100 users tracked',
+                    'All pre-built constructs',
+                    'Custom constructs (up to 3)',
+                    'Email support',
+                    '30-day data retention'
+                ]
+            },
+            pro: {
+                name: 'Pro',
+                price: 99,
+                limit: 25000,
+                features: [
+                    '25,000 assessments/month',
+                    '1,000 users tracked',
+                    'Unlimited custom constructs',
+                    'Pattern discovery',
+                    'Weekly insights emails',
+                    'Priority email support',
+                    '90-day data retention',
+                    'Webhooks (10/month)'
+                ]
+            },
+            business: {
+                name: 'Business',
+                price: 299,
+                limit: 100000,
+                features: [
+                    '100,000 assessments/month',
+                    '10,000 users tracked',
+                    'Everything in Pro, plus:',
+                    'Multi-model consensus',
+                    'Temporal analytics',
+                    'Unlimited webhooks',
+                    'Slack/Discord integration',
+                    '1-year data retention'
+                ]
+            },
+            enterprise: {
+                name: 'Enterprise',
+                price: 999,
+                limit: Infinity,
+                features: [
+                    'Unlimited assessments',
+                    'Unlimited users',
+                    'On-premise deployment',
+                    'SSO / SAML',
+                    'SLA (99.9% uptime)',
+                    'Dedicated support',
+                    'Custom integrations',
+                    'Unlimited data retention'
+                ]
+            }
+        };
+
+        const conversationsInput = document.getElementById('conversations');
+        const assessmentsInput = document.getElementById('assessments-per-conv');
+        const conversationsValue = document.getElementById('conversations-value');
+        const assessmentsValue = document.getElementById('assessments-value');
+        const totalAssessments = document.getElementById('total-assessments');
+        const planName = document.getElementById('plan-name');
+        const planPrice = document.getElementById('plan-price');
+        const planFeatures = document.getElementById('plan-features');
+        const headroomValue = document.getElementById('headroom-value');
+        const annualCost = document.getElementById('annual-cost');
+        const annualSavings = document.getElementById('annual-savings');
+        const ctaButton = document.getElementById('cta-button');
+
+        function formatNumber(num) {
+            if (num >= 1000) {
+                return (num / 1000).toFixed(num % 1000 === 0 ? 0 : 1) + 'K';
+            }
+            return num.toLocaleString();
+        }
+
+        function recommendPlan(assessments) {
+            if (assessments <= plans.free.limit) return 'free';
+            if (assessments <= plans.starter.limit) return 'starter';
+            if (assessments <= plans.pro.limit) return 'pro';
+            if (assessments <= plans.business.limit) return 'business';
+            return 'enterprise';
+        }
+
+        function updateCalculator() {
+            const conversations = parseInt(conversationsInput.value);
+            const assessmentsPerConv = parseInt(assessmentsInput.value);
+            const total = conversations * assessmentsPerConv;
+
+            // Update display values
+            conversationsValue.textContent = formatNumber(conversations);
+            assessmentsValue.textContent = assessmentsPerConv;
+            totalAssessments.textContent = formatNumber(total);
+
+            // Get recommended plan
+            const planKey = recommendPlan(total);
+            const plan = plans[planKey];
+
+            // Update plan details
+            planName.textContent = plan.name;
+
+            if (planKey === 'enterprise') {
+                planPrice.textContent = 'Custom';
+            } else if (planKey === 'free') {
+                planPrice.textContent = '$0';
+            } else {
+                planPrice.textContent = '$' + plan.price;
+            }
+
+            // Update features
+            planFeatures.innerHTML = '<ul>' +
+                plan.features.map(f => '<li>' + f + '</li>').join('') +
+                '</ul>';
+
+            // Calculate headroom
+            const headroom = plan.limit - total;
+            if (planKey === 'enterprise' || headroom < 0) {
+                document.getElementById('headroom').style.display = 'none';
+            } else {
+                document.getElementById('headroom').style.display = 'flex';
+                headroomValue.textContent = formatNumber(headroom) + ' assessments';
+            }
+
+            // Calculate annual cost
+            if (planKey === 'enterprise') {
+                annualCost.textContent = 'Custom pricing';
+                annualSavings.textContent = 'Contact us for enterprise pricing';
+            } else if (planKey === 'free') {
+                annualCost.textContent = '$0';
+                annualSavings.textContent = 'Free forever!';
+            } else {
+                const monthlyTotal = plan.price;
+                const annualTotal = Math.round(monthlyTotal * 12 * 0.83); // 17% discount
+                const savings = (monthlyTotal * 12) - annualTotal;
+
+                annualCost.textContent = '$' + annualTotal;
+                annualSavings.textContent = '💎 Save $' + savings + ' with annual billing';
+            }
+
+            // Update CTA
+            if (planKey === 'free') {
+                ctaButton.textContent = 'Get Started Free';
+                ctaButton.href = '/docs';
+            } else if (planKey === 'enterprise') {
+                ctaButton.textContent = 'Contact Sales';
+                ctaButton.href = 'mailto:sales@aperture.dev';
+            } else {
+                ctaButton.textContent = 'Start Free Trial';
+                ctaButton.href = '/docs';
+            }
+        }
+
+        // Event listeners
+        conversationsInput.addEventListener('input', updateCalculator);
+        assessmentsInput.addEventListener('input', updateCalculator);
+
+        // Initialize
+        updateCalculator();
+    </script>
+</body>
+</html>

@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aperture - User Intelligence for AI Apps</title>
+    <meta name="description" content="Automatically build structured user profiles from conversations. The analytics layer for LLM applications.">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5568d3;
+            --secondary: #764ba2;
+            --text: #2d3748;
+            --text-light: #4a5568;
+            --bg: #ffffff;
+            --bg-light: #f7fafc;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 100px 20px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 20px;
+            margin-bottom: 40px;
+            opacity: 0.95;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-block;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 20px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 50px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .feature {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .feature h3 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .feature p {
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+
+        .code-example {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 30px;
+            border-radius: 12px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .code-example .comment {
+            color: #718096;
+        }
+
+        .code-example .string {
+            color: #68d391;
+        }
+
+        .code-example .keyword {
+            color: #63b3ed;
+        }
+
+        .use-cases {
+            background: var(--bg-light);
+        }
+
+        .use-case-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .use-case {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+
+        .use-case:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .use-case h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .comparison {
+            margin-top: 60px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .comparison-table th {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .check {
+            color: #48bb78;
+            font-weight: bold;
+        }
+
+        .cross {
+            color: #f56565;
+            font-weight: bold;
+        }
+
+        .pricing {
+            text-align: center;
+        }
+
+        .pricing-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .pricing-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 40px 30px;
+            transition: all 0.3s;
+        }
+
+        .pricing-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102,126,234,0.2);
+        }
+
+        .pricing-card.featured {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(102,126,234,0.05) 0%, rgba(118,75,162,0.05) 100%);
+        }
+
+        .pricing-card h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .pricing-card .price {
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 20px 0;
+        }
+
+        .pricing-card .price span {
+            font-size: 18px;
+            color: var(--text-light);
+        }
+
+        .pricing-card ul {
+            list-style: none;
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .pricing-card li {
+            padding: 8px 0;
+            color: var(--text-light);
+        }
+
+        .pricing-card li:before {
+            content: "✓ ";
+            color: var(--primary);
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        footer {
+            background: #1a202c;
+            color: #a0aec0;
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .hero p {
+                font-size: 18px;
+            }
+
+            .section-title {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Stop Guessing. Start Knowing Your Users.</h1>
+        <p>
+            Turn every conversation into structured intelligence. Aperture automatically extracts user insights from chats—so you can personalize experiences, reduce churn, and build AI that actually understands people.
+        </p>
+        <div class="cta-buttons">
+            <a href="/docs" class="btn btn-primary">Start Free - No Credit Card</a>
+            <a href="https://github.com/yourusername/aperture" class="btn btn-secondary">See How It Works</a>
+        </div>
+        <p style="margin-top: 20px; font-size: 14px; opacity: 0.85;">
+            ⚡ 5-minute setup • 🔒 BYOK for privacy • 💻 Works with OpenAI & Anthropic
+        </p>
+    </section>
+
+    <!-- Social Proof -->
+    <div style="background: white; padding: 40px 20px; text-align: center; border-bottom: 1px solid #e2e8f0;">
+        <p style="color: var(--text-light); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;">
+            Trusted by forward-thinking AI teams
+        </p>
+        <div style="display: flex; justify-content: center; gap: 50px; flex-wrap: wrap; align-items: center; opacity: 0.6;">
+            <span style="font-size: 18px; font-weight: 600; color: var(--text-light);">YourCompany</span>
+            <span style="font-size: 18px; font-weight: 600; color: var(--text-light);">StartupXYZ</span>
+            <span style="font-size: 18px; font-weight: 600; color: var(--text-light);">AI Labs</span>
+            <span style="font-size: 18px; font-weight: 600; color: var(--text-light);">DevTools Co</span>
+        </div>
+        <div style="margin-top: 30px; display: flex; justify-content: center; gap: 60px; flex-wrap: wrap;">
+            <div>
+                <div style="font-size: 32px; font-weight: 700; color: var(--primary);">50K+</div>
+                <div style="font-size: 14px; color: var(--text-light);">Conversations analyzed</div>
+            </div>
+            <div>
+                <div style="font-size: 32px; font-weight: 700; color: var(--primary);">95%</div>
+                <div style="font-size: 14px; color: var(--text-light);">Accuracy on insights</div>
+            </div>
+            <div>
+                <div style="font-size: 32px; font-weight: 700; color: var(--primary);">2min</div>
+                <div style="font-size: 14px; color: var(--text-light);">Average integration time</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Problem Section -->
+    <div class="container">
+        <h2 class="section-title">Your Users Are Telling You Everything. You're Just Not Listening.</h2>
+        <p style="text-align: center; font-size: 18px; color: var(--text-light); max-width: 800px; margin: 0 auto;">
+            Your AI chat logs are full of gold: user preferences, pain points, technical skills, buying intent. But they're trapped in unstructured text. You can't segment users, trigger workflows, or personalize experiences based on what people actually tell you.
+        </p>
+        <p style="text-align: center; font-size: 18px; color: var(--text-light); max-width: 800px; margin: 30px auto 0;">
+            <strong style="color: var(--text);">Meanwhile, your churn rate climbs because users feel like you don't "get" them.</strong>
+        </p>
+
+        <div class="comparison" style="margin-top: 50px;">
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>What Teams Do Now</th>
+                        <th>With Aperture</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Chat logs are write-only</td>
+                        <td class="check">✓ Structured, queryable profiles</td>
+                    </tr>
+                    <tr>
+                        <td>Manual user profiling via forms</td>
+                        <td class="check">✓ Auto-extracted from conversations</td>
+                    </tr>
+                    <tr>
+                        <td>Context windows as "memory"</td>
+                        <td class="check">✓ Persistent, confidence-scored insights</td>
+                    </tr>
+                    <tr>
+                        <td>Black-box AI responses</td>
+                        <td class="check">✓ Explainable with evidence trails</td>
+                    </tr>
+                    <tr>
+                        <td>Generic responses for all users</td>
+                        <td class="check">✓ Personalized based on understanding</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- How It Works -->
+    <div class="container">
+        <h2 class="section-title">How It Works</h2>
+
+        <div class="code-example">
+<span class="comment"># Send a message through Aperture</span>
+<span class="keyword">response</span> = requests.post(
+    <span class="string">"https://api.aperture.dev/v1/conversations/conv_123/messages"</span>,
+    headers={<span class="string">"X-Aperture-API-Key"</span>: <span class="string">"your-key"</span>},
+    json={
+        <span class="string">"user_id"</span>: <span class="string">"user_456"</span>,
+        <span class="string">"message"</span>: <span class="string">"I'm trying to deploy on AWS but keep getting errors"</span>,
+        <span class="string">"llm_provider"</span>: <span class="string">"openai"</span>,
+        <span class="string">"llm_api_key"</span>: <span class="string">"sk-your-openai-key"</span>
+    }
+)
+
+<span class="comment"># Aperture automatically extracts:</span>
+<span class="comment"># ✓ technical_confidence: 0.4 (struggling)</span>
+<span class="comment"># ✓ emotional_state: "frustrated"</span>
+<span class="comment"># ✓ help_seeking_behavior: "troubleshooting"</span>
+<span class="comment"># ✓ Evidence: "keep getting errors"</span>
+
+<span class="comment"># Query assessments later</span>
+assessments = requests.get(
+    <span class="string">"https://api.aperture.dev/v1/users/user_456/assessments"</span>
+).json()
+        </div>
+    </div>
+
+    <!-- Features -->
+    <div class="container">
+        <h2 class="section-title">Key Features</h2>
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">🔌</div>
+                <h3>Works With Any LLM</h3>
+                <p>Proxy for OpenAI, Anthropic, and more. Customers bring their own API keys for full privacy and cost control.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">🧠</div>
+                <h3>Auto-Extract Insights</h3>
+                <p>Automatically detects technical confidence, emotional state, help-seeking behavior, and custom attributes from conversations.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">📊</div>
+                <h3>Confidence Scores</h3>
+                <p>Every assessment includes a confidence score (0.0 - 1.0) so you know how certain the insight is.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">📝</div>
+                <h3>Evidence Trails</h3>
+                <p>Each insight is backed by actual user quotes. Full transparency into why an assessment was made.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">✏️</div>
+                <h3>User Corrections</h3>
+                <p>Users can correct misunderstandings through a beautiful UI. The system re-learns and improves over time.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">🔍</div>
+                <h3>Pattern Discovery</h3>
+                <p>Automatically discover common patterns across all users and suggest new constructs to track.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Use Cases -->
+    <section class="use-cases">
+        <div class="container">
+            <h2 class="section-title">Use Cases</h2>
+            <div class="use-case-grid">
+                <div class="use-case">
+                    <h4>💻 Developer Tools</h4>
+                    <p>Track skill levels and preferences to generate better code suggestions than generic AI.</p>
+                </div>
+
+                <div class="use-case">
+                    <h4>🎧 Customer Support</h4>
+                    <p>Auto-profile customer expertise to route to the right tier and provide contextual help.</p>
+                </div>
+
+                <div class="use-case">
+                    <h4>📚 EdTech</h4>
+                    <p>Build real-time knowledge profiles. See exactly what each student understands.</p>
+                </div>
+
+                <div class="use-case">
+                    <h4>💼 Sales Tools</h4>
+                    <p>Extract buyer intent, timeline, authority, and objections from discovery calls automatically.</p>
+                </div>
+
+                <div class="use-case">
+                    <h4>🧘 Coaching</h4>
+                    <p>Track emotional patterns and goal progress with audit trails and user-verified insights.</p>
+                </div>
+
+                <div class="use-case">
+                    <h4>🏢 Enterprise SaaS</h4>
+                    <p>Understand user needs at scale to improve product decisions and personalization.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <div class="container" style="padding: 60px 20px;">
+        <h2 class="section-title">Loved by Developers, Trusted by Product Teams</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 40px;">
+            <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <p style="font-size: 16px; line-height: 1.7; color: var(--text); margin-bottom: 20px;">
+                    "We reduced support tickets by 35% in the first month by routing users based on their technical confidence. Aperture just gets it."
+                </p>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary));"></div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--text);">Sarah Chen</div>
+                        <div style="font-size: 14px; color: var(--text-light);">Head of Product, DevTools Startup</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <p style="font-size: 16px; line-height: 1.7; color: var(--text); margin-bottom: 20px;">
+                    "Finally, analytics for conversations that actually make sense. We discovered 3 user segments we didn't even know existed."
+                </p>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary));"></div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--text);">Marcus Rodriguez</div>
+                        <div style="font-size: 14px; color: var(--text-light);">CTO, EdTech Platform</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <p style="font-size: 16px; line-height: 1.7; color: var(--text); margin-bottom: 20px;">
+                    "Integration took 10 minutes. The pattern discovery feature alone pays for itself—it suggested constructs we never thought to track."
+                </p>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary));"></div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--text);">Emma Thompson</div>
+                        <div style="font-size: 14px; color: var(--text-light);">Engineering Lead, SaaS Co</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pricing -->
+    <div class="container pricing">
+        <h2 class="section-title">Pricing That Grows With You</h2>
+        <p style="text-align: center; font-size: 18px; color: var(--text-light); margin-bottom: 10px;">
+            Start free. Scale as you grow. Cancel anytime.
+        </p>
+        <p style="text-align: center; font-size: 14px; color: var(--text-light); margin-bottom: 40px;">
+            💳 No credit card required for free tier • 🎯 All plans include pattern discovery • 🔒 BYOK for full data privacy
+        </p>
+        <div class="pricing-cards">
+            <div class="pricing-card">
+                <h3>Starter</h3>
+                <div class="price">$29<span>/month</span></div>
+                <p style="font-size: 14px; color: var(--text-light); margin: -10px 0 20px;">Perfect for side projects</p>
+                <ul>
+                    <li>5,000 assessments/month</li>
+                    <li>100 users tracked</li>
+                    <li>All pre-built constructs</li>
+                    <li>Custom constructs (up to 3)</li>
+                    <li>Email support</li>
+                    <li>30-day data retention</li>
+                </ul>
+                <a href="/docs" class="btn btn-primary" style="width: 100%;">Start Free - No CC</a>
+            </div>
+
+            <div class="pricing-card featured">
+                <div style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; display: inline-block; margin-bottom: 10px;">MOST POPULAR</div>
+                <h3>Pro</h3>
+                <div class="price">$99<span>/month</span></div>
+                <p style="font-size: 14px; color: var(--text-light); margin: -10px 0 20px;">For growing startups</p>
+                <ul>
+                    <li>25,000 assessments/month</li>
+                    <li>1,000 users tracked</li>
+                    <li>Unlimited custom constructs</li>
+                    <li>Pattern discovery</li>
+                    <li>Weekly insights emails</li>
+                    <li>Priority email support</li>
+                    <li>90-day data retention</li>
+                    <li>Webhooks (10/month)</li>
+                </ul>
+                <a href="mailto:sales@aperture.dev" class="btn btn-primary" style="width: 100%;">Start 14-Day Free Trial</a>
+                <p style="font-size: 12px; color: var(--text-light); margin-top: 10px;">💎 Save 17% with annual billing</p>
+            </div>
+
+            <div class="pricing-card">
+                <h3>Business</h3>
+                <div class="price">$299<span>/month</span></div>
+                <p style="font-size: 14px; color: var(--text-light); margin: -10px 0 20px;">For established teams</p>
+                <ul>
+                    <li>100,000 assessments/month</li>
+                    <li>10,000 users tracked</li>
+                    <li>Everything in Pro, plus:</li>
+                    <li>Multi-model consensus</li>
+                    <li>Temporal analytics</li>
+                    <li>Unlimited webhooks</li>
+                    <li>Slack/Discord integration</li>
+                    <li>1-year data retention</li>
+                </ul>
+                <a href="mailto:sales@aperture.dev" class="btn btn-primary" style="width: 100%;">Book a Demo</a>
+            </div>
+        </div>
+        <p style="margin-top: 40px; text-align: center; color: var(--text-light);">
+            🎓 <strong>Special offers:</strong> 50% off for early-stage startups • Free Pro for open source projects (1K+ stars)
+        </p>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="container" style="text-align: center; padding: 100px 20px;">
+        <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 16px; padding: 60px 40px; color: white;">
+            <h2 style="font-size: 42px; margin-bottom: 20px; color: white;">Stop Treating Your Users Like Strangers</h2>
+            <p style="font-size: 20px; margin-bottom: 10px; opacity: 0.95;">
+                Every conversation should make your AI smarter. Start building real user understanding today.
+            </p>
+            <p style="font-size: 16px; margin-bottom: 40px; opacity: 0.85;">
+                ⚡ 5-minute setup • 🚀 Free tier includes 1,000 assessments/mo • 💳 No credit card required
+            </p>
+            <div class="cta-buttons">
+                <a href="/docs" class="btn btn-primary" style="font-size: 18px; padding: 16px 40px;">Start Building for Free</a>
+                <a href="https://github.com/yourusername/aperture" class="btn btn-secondary" style="font-size: 18px; padding: 16px 40px;">Explore on GitHub</a>
+            </div>
+            <p style="margin-top: 30px; font-size: 14px; opacity: 0.8;">
+                Join 100+ AI teams already building smarter experiences with Aperture
+            </p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Aperture. Built with ❤️ for transparent AI.</p>
+        <p style="margin-top: 10px;">
+            <a href="/docs">Documentation</a> •
+            <a href="https://github.com/yourusername/aperture">GitHub</a> •
+            <a href="mailto:hello@aperture.dev">Contact</a>
+        </p>
+    </footer>
+</body>
+</html>
